@@ -1,0 +1,424 @@
+//---------------------------------------------------------------------------
+
+#include <vcl.h>
+#pragma hdrstop
+#include "Unit1.h"
+#include <fstream>
+#include <System.Classes.hpp>
+#include <string>
+#include <vcl.graphics.hpp>
+#include <vcl.Controls.hpp>
+#include <vcl.ExtCtrls.hpp>
+#include <vcl.Graphics.hpp>
+#include <vcl.StdCtrls.hpp>
+#include <vcl.Imaging.jpeg.hpp>
+#include <vcl.Imaging.pngimage.hpp>
+#include <vcl.Buttons.hpp>
+#include <fstream>
+#include "matmem.h"
+#include "umem.h"
+//#include "file4.cpp"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+TForm1 *Form1;
+//---------------------------------------------------------------------------
+int fil =0;
+int col =0;
+int cx=0 ;
+int cy=0 ;
+int const screenHeight=12;
+int const screenWidth=12;
+int const ax=30;
+int const ay=30;
+CSMemoria* mem=new CSMemoria;
+MatrizSm* mapm =new  MatrizSm(mem);
+MatrizSm* stagem =new  MatrizSm(mem);
+//TJPEG img ;
+ TBitmap * img = new TBitmap;
+//TGraphic* img = ;
+void setup(int & x ,int & y){
+
+for (int i = 0; i < stagem->dimension_fila(); i++) {
+		for (int j = 0; j <stagem->dimension_columna(); j++) {
+			  if (stagem->elemento(i,j)=='v') {
+				x=i;
+				y=j;
+			  }
+		}
+}
+
+
+}
+
+int getlargo(){
+ // Obtener el identificador del monitor primario
+    HMONITOR hMonitor = MonitorFromWindow(GetDesktopWindow(), MONITOR_DEFAULTTOPRIMARY);
+
+    // Obtener información sobre el monitor
+    MONITORINFO monitorInfo = { sizeof(monitorInfo) };
+	GetMonitorInfo(hMonitor, &monitorInfo);
+	return  monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left ;
+}
+
+int getalto(){
+ // Obtener el identificador del monitor primario
+    HMONITOR hMonitor = MonitorFromWindow(GetDesktopWindow(), MONITOR_DEFAULTTOPRIMARY);
+
+    // Obtener información sobre el monitor
+    MONITORINFO monitorInfo = { sizeof(monitorInfo) };
+	GetMonitorInfo(hMonitor, &monitorInfo);
+    return     monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top ;
+}
+
+void dibujar(TCanvas* s, int w, int h){
+s->Pen->Color=clBtnFace;
+s->Brush->Color=clBtnFace;
+s->Rectangle(0,0,10000,10000);
+ img->LoadFromFile("yo.bmp");
+int x;    int y;    int ini;
+s->Pen->Color=clBlack;
+s->Brush->Color= clGreen;
+//x=(w-(screenHeight*ax))/2-200;
+//y=(h-( screenWidth*ay))/2-200;
+x=50;
+y=50;
+ for (int i = 1; i < stagem->dimension_fila()+1; i++) {
+  for (int j = 1; j <stagem->dimension_columna()+1; j++) {    //x,y,x+ax,y+ay)
+
+	if (stagem->elemento(i,j)==35) {
+	s->Pen->Color=clBlack;
+	s->Brush->Color= clBlack;
+	s->Rectangle(x,y,x+ax,y+ay);
+
+	}
+
+	if (stagem->elemento(i,j)=='v') {
+	/*s->Pen->Color=clRed;
+	s->Brush->Color= clRed;*/
+	s->StretchDraw(Rect(x,y,x+ax,y+ay),img);
+	}
+
+	if (stagem->elemento(i,j)==32) {
+	s->Pen->Color=clGreen;
+	s->Brush->Color= clGreen;
+	s->Rectangle(x,y,x+ax,y+ay);
+	}
+
+   /*	if (stagem->elemento(i,j)==0) {
+	s->Pen->Color=clBlack;
+	s->Brush->Color= clRed;
+	s->Rectangle(x,y,x+ax,y+ay);
+	}  */
+
+   //s->TextRect(Rect(500,50,600,100), 10, 10, "hola mundo");
+   //	s->TextRect()
+   x=ax+x;
+  }
+  ini=x;
+  y=ay+y;
+  x=50;
+ }
+ /*
+  canvas->Font->Name = L"Arial";
+	canvas->Font->Size = 12;
+ */
+  s->Brush->Color= clBtnFace;
+ /*UnicodeString all=	UnicodeString(stagem->to_str().c_str());//stagem->to_str();
+ s->TextOut(ini+10, 50,all);
+	UnicodeString all=	UnicodeString(stagem->get_linea(f).c_str());//stagem->to_str();
+ s->TextOut(ini+500, f*50,all);
+ */
+ s->Font->Size = 8;
+  for (int f = 1; f < screenWidth; f++) {
+ UnicodeString all=	UnicodeString(stagem->get_fila(f).c_str());//stagem->to_str();
+  s->TextOut(ini+10, f*50,all);
+ 
+ }
+
+ int f=1; int fr=1; int aumento=0;
+ int pr=ini+aumento;
+ int nini=490;
+ while (f<stagem->get_max()+9){
+  UnicodeString all= UnicodeString(stagem->get_linea(f).c_str());
+   s->TextOut(nini+aumento, fr*40,all);
+   f++;
+   fr++;
+   if (fr*40>930) {
+   fr=1;
+   aumento=aumento+300;
+	s->TextOut(nini+aumento, fr*40,UnicodeString(stagem->get_linea(1).c_str()));
+    fr++;
+   }
+ }
+	 
+
+ 
+}
+
+void llenar(string texto){
+	char x;
+	char  sos;
+	int i=1;
+	int j=1;
+	ifstream archivo;//"C://admin//esg.txt"
+	archivo.open(texto.c_str(),ios::in);
+	if (archivo.fail()){
+		cout<<"no";
+	}else{
+	  while (!archivo.eof()){
+	  archivo.get(x);
+	  sos=x;
+	  if (x!=10) {
+	   if (!archivo.eof()) {
+	   stagem->poner(i,j,x);
+	   }
+	  j++;
+	   if (j>=screenWidth) {
+		i++;
+		j=1;
+	   }
+	  }else{
+	   i++;
+	   j=1;
+	   }
+
+	  }
+
+	 }
+	 
+}
+
+
+void llenar_exam(string texto, int level){
+	char x;
+	char  sos='0';
+	string d;
+	int col;
+	int i=1;
+	int j=1;
+	bool ban=true;
+	ifstream archivo;//"C://admin//esg.txt"
+	archivo.open(texto.c_str(),ios::in);
+
+	if (archivo.fail()){
+		cout<<"no";
+	}else{
+		 while (!archivo.eof() && ban){
+		 archivo.get(x);
+		 sos=x;
+		 d=to_string(level);
+		 //char sus = char(d[0]);
+		  if (x==char(d[0])){
+		  sos=x;
+		  ban=false;
+		  }
+		 }
+
+		 ban=true;
+
+		 while (!archivo.eof() && ban){
+		 archivo.get(x);
+		 sos=x;
+		   if (x==10) {
+
+		   ban=false;
+		   }
+
+		 }
+
+		 ban=true;
+
+		 while (!archivo.eof() && ban){
+		 archivo.get(x);
+		 sos=x;
+		  if (x=='{') {
+		  ban = false;
+		  }
+
+		  if (ban) {
+			 if (x!=10) {
+				 if (!archivo.eof()) {
+				  stagem->poner(i,j,x);
+				 }
+				  j++;
+			   if (j>=dimension_columna()) {
+				i++;
+				j=1;
+			   }
+
+			 }else{
+			  i++;
+			  col=j;
+			  j=1;
+			  }
+		  }
+		 }
+	   //	}
+
+	 }
+   stagem->dimensionar(i-1,col-1);//   i-2
+	/*
+	while (!archivo.eof()){
+	  archivo.get(x);
+	  sos=x;
+	  if (x!=10) {
+	   if (!archivo.eof()) {
+	   stagem->poner(i,j,x);
+	   }
+	  j++;
+	   if (j>=screenWidth) {
+		i++;
+		j=1;
+	   }
+	  }else{
+	   i++;
+	   j=1;
+	   }
+
+	  }
+	*/
+}
+
+ void input(){
+   int Key;
+	switch(Key){
+	case 80:
+
+	break;
+	}
+
+ }
+
+__fastcall TForm1::TForm1(TComponent* Owner)
+	: TForm(Owner)
+{
+ 
+}
+//---------------------------------------------------------------------------
+
+
+
+
+void __fastcall TForm1::Button1Click(TObject *Sender)
+{
+
+/*stagem->dimensionar(12,12);
+llenar("a.txt");
+dibujar(Canvas,getlargo(),getalto(),2);  */
+ setup(cx,cy);
+AnsiString pal= Edit1->Text.c_str() ;
+ int i= stoi(pal.c_str());
+/*AnsiString  pala = ;
+string pals(pala);
+ const char* s=pals.c_str();             */
+//char s=ss;
+
+
+stagem->dimensionar(12,12);
+llenar_exam("b.txt",i) ;    //  char(i)
+dibujar(Canvas,getlargo(),getalto());
+ setup(cx,cy);
+Edit2->Text=cx;
+Edit3->Text=cy;
+  //mem=new CSMemoria;
+  //mapm =new  MatrizSm(mem);
+  /*stagem =new  MatrizSm(mem);
+  stagem->dimensionar(12,12);*/
+/*Canvas->Pen->Color=clRed;
+ Canvas->Ellipse(1,1,100,100);      */
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TForm1::FormKeyDown(TObject *Sender, WORD &Key, TShiftState Shift)
+
+{
+//int i;
+
+  /* switch(Key){
+	case 'x':
+	 life=3;
+	break;
+   }
+	  */
+
+  /*case key  of
+
+  37:if di<>3 then direccion:=1;   // derecha
+  38:if di<>4 then direccion:=2; //arriba
+  39:if di<>1 then direccion:=3; // izquierda
+  40:if di<>2 then direccion:=4; //abajo
+                  //i=fila j=columna i-1=arriba i+1=abajo
+  end;    */
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+void __fastcall TForm1::Button2Click(TObject *Sender){
+
+if (stagem->elemento(cx-1,cy)==35) {
+
+}else{
+stagem->poner(cx,cy,' ') ;
+stagem->poner(cx-1,cy,'v') ;
+cx--;
+
+Edit3->Text=cx;
+Edit2->Text=cy;
+dibujar(Canvas,getlargo(),getalto());
+}
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button5Click(TObject *Sender){
+if (stagem->elemento(cx+1,cy)==35) {
+
+}else{
+
+stagem->poner(cx,cy,' ') ;
+stagem->poner(cx+1,cy,'v') ;
+cx++;
+
+Edit2->Text=cx;
+Edit3->Text=cy;
+dibujar(Canvas,getlargo(),getalto());
+}
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button4Click(TObject *Sender){
+if (stagem->elemento(cx,cy+1)==35) {
+
+}else{
+stagem->poner(cx,cy,' ') ;
+stagem->poner(cx,cy+1,'v') ;
+cy++;
+
+Edit2->Text=cx;
+Edit3->Text=cy;
+dibujar(Canvas,getlargo(),getalto());
+}
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TForm1::Button3Click(TObject *Sender){
+if (stagem->elemento(cx,cy-1)==35) {
+
+}else{
+
+stagem->poner(cx,cy,' ') ;
+stagem->poner(cx,cy-1,'v') ;
+cy--;
+
+Edit2->Text=cx;
+Edit3->Text=cy;
+dibujar(Canvas,getlargo(),getalto());
+}
+}
+//---------------------------------------------------------------------------
+
+
